@@ -10,7 +10,7 @@ __pycache__/
 *.pyo
 
 # Archivos de TensorFlow.js pesados (> 1MB) — se cargan desde CDN en producción
-web/tf.min.js
+tf.min.js
 
 # Archivos del sistema
 .DS_Store
