@@ -1,0 +1,468 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Predictor de Estado Académico - IA</title>
+    
+    <!-- CSS de Bootstrap para responsive design -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+    
+    <!-- PapaParse para procesar CSV -->
+    <script src="papaparse.min.js"></script>
+    
+    <!-- TensorFlow.js (CDN - archivo muy grande para git) -->
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.8.0/dist/tf.min.js"></script>
+    
+    <!-- CSS personalizado -->
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <!-- ═══════════════════════════════════════════════════════════════════════════
+         NAVBAR - Encabezado de la aplicación
+         ═══════════════════════════════════════════════════════════════════════════ -->
+    <nav class="navbar navbar-dark navbar-expand-lg">
+        <div class="container-fluid">
+            <span class="navbar-brand mb-0 h1">
+                <i class="bi bi-brain"></i> Predictor Académico IA
+            </span>
+            <div class="nav-info">
+                <span class="badge bg-primary">v1.0</span>
+                <span class="badge bg-success">Modelos Activos</span>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container-fluid main-container">
+        <!-- ═══════════════════════════════════════════════════════════════════════════
+             HERO SECTION
+             ═══════════════════════════════════════════════════════════════════════════ -->
+        <section class="hero-section">
+            <h1>Sistema Inteligente de Predicción Académica</h1>
+            <p>Utiliza Inteligencia Artificial para predecir el estado académico de estudiantes</p>
+            <div class="stats-overview">
+                <div class="stat-card">
+                    <h3>3 Clases</h3>
+                    <p>Dropout | Enrolled | Graduate</p>
+                </div>
+                <div class="stat-card">
+                    <h3>5 Variables</h3>
+                    <p>Características cuidadosamente seleccionadas</p>
+                </div>
+                <div class="stat-card">
+                    <h3>Red Neuronal</h3>
+                    <p>Deep Learning para máxima precisión</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- ═══════════════════════════════════════════════════════════════════════════
+             SECCIÓN DE PREDICCIÓN INDIVIDUAL
+             ═══════════════════════════════════════════════════════════════════════════ -->
+        <section class="section">
+            <h2 class="section-title">📋 Predicción Individual</h2>
+            
+            <div class="row">
+                <!-- Formulario de entrada -->
+                <div class="col-lg-6">
+                    <div class="form-card">
+                        <h3>Ingrese los datos del estudiante</h3>
+                        <form id="predictionForm">
+                            <!-- Variable 1: Curricular units 2nd sem (approved) -->
+                            <div class="form-group">
+                                <label for="units_approved">
+                                    📚 Unidades curriculares aprobadas (2do semestre)
+                                </label>
+                                <input 
+                                    type="number" 
+                                    id="units_approved" 
+                                    class="form-control" 
+                                    placeholder="0-30"
+                                    min="0"
+                                    max="30"
+                                    step="0.5"
+                                    required
+                                >
+                                <small class="form-text">Cantidad de unidades aprobadas</small>
+                            </div>
+
+                            <!-- Variable 2: Curricular units 2nd sem (grade) -->
+                            <div class="form-group">
+                                <label for="units_grade">
+                                    📊 Calificación promedio (2do semestre)
+                                </label>
+                                <input 
+                                    type="number" 
+                                    id="units_grade" 
+                                    class="form-control" 
+                                    placeholder="0-20"
+                                    min="0"
+                                    max="20"
+                                    step="0.1"
+                                    required
+                                >
+                                <small class="form-text">Promedio de calificaciones</small>
+                            </div>
+
+                            <!-- Variable 3: Tuition fees up to date -->
+                            <div class="form-group">
+                                <label for="tuition_fees">
+                                    💳 Situación de pago de aranceles
+                                </label>
+                                <select id="tuition_fees" class="form-control" required>
+                                    <option value="">-- Seleccionar --</option>
+                                    <option value="0">Al día (0)</option>
+                                    <option value="1">Atrasado (1)</option>
+                                </select>
+                                <small class="form-text">¿El estudiante tiene aranceles pagos?</small>
+                            </div>
+
+                            <!-- Variable 4: Scholarship holder -->
+                            <div class="form-group">
+                                <label for="scholarship">
+                                    🎓 ¿Es beneficiario de beca?
+                                </label>
+                                <select id="scholarship" class="form-control" required>
+                                    <option value="">-- Seleccionar --</option>
+                                    <option value="0">No (0)</option>
+                                    <option value="1">Sí (1)</option>
+                                </select>
+                                <small class="form-text">Beneficiario de algún programa de beca</small>
+                            </div>
+
+                            <!-- Variable 5: Admission grade -->
+                            <div class="form-group">
+                                <label for="admission_grade">
+                                    🎯 Calificación de admisión
+                                </label>
+                                <input 
+                                    type="number" 
+                                    id="admission_grade" 
+                                    class="form-control" 
+                                    placeholder="0-200"
+                                    min="0"
+                                    max="200"
+                                    step="0.1"
+                                    required
+                                >
+                                <small class="form-text">Puntuación de ingreso a la universidad</small>
+                            </div>
+
+                            <!-- Botón de predicción -->
+                            <button type="submit" class="btn btn-primary btn-lg w-100 mt-3">
+                                <i class="spinner-icon" id="formSpinner" style="display: none;">⏳</i>
+                                🔮 Realizar Predicción
+                            </button>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- Resultado de predicción -->
+                <div class="col-lg-6">
+                    <div id="resultCard" class="result-card" style="display: none;">
+                        <h3>Resultado de la Predicción</h3>
+                        
+                        <div class="prediction-result">
+                            <div class="predicted-class">
+                                <p>Clase Predicha:</p>
+                                <h2 id="predictedClass"></h2>
+                            </div>
+                        </div>
+
+                        <div class="probabilities-container">
+                            <h4>Probabilidades por Clase</h4>
+                            
+                            <div class="probability-item">
+                                <div class="probability-header">
+                                    <span>🚪 Dropout</span>
+                                    <span id="prob-dropout" class="prob-value">0%</span>
+                                </div>
+                                <div class="probability-bar">
+                                    <div class="probability-fill" id="bar-dropout"></div>
+                                </div>
+                            </div>
+
+                            <div class="probability-item">
+                                <div class="probability-header">
+                                    <span>📚 Enrolled</span>
+                                    <span id="prob-enrolled" class="prob-value">0%</span>
+                                </div>
+                                <div class="probability-bar">
+                                    <div class="probability-fill" id="bar-enrolled"></div>
+                                </div>
+                            </div>
+
+                            <div class="probability-item">
+                                <div class="probability-header">
+                                    <span>🎓 Graduate</span>
+                                    <span id="prob-graduate" class="prob-value">0%</span>
+                                </div>
+                                <div class="probability-bar">
+                                    <div class="probability-fill" id="bar-graduate"></div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div id="interpretationBox" class="interpretation-box"></div>
+                    </div>
+
+                    <!-- Mensaje de error -->
+                    <div id="errorCard" class="error-card" style="display: none;">
+                        <h3>⚠️ Error</h3>
+                        <p id="errorMessage"></p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ═══════════════════════════════════════════════════════════════════════════
+             SECCIÓN DE PROCESAMIENTO CSV
+             ═══════════════════════════════════════════════════════════════════════════ -->
+        <section class="section">
+            <h2 class="section-title">📁 Análisis Masivo (CSV)</h2>
+            
+            <div class="csv-card">
+                <div class="csv-upload-area" id="csvUploadArea">
+                    <i class="upload-icon">📤</i>
+                    <h3>Arrastra un archivo CSV o haz clic</h3>
+                    <p>Formato esperado: columnas con los 5 datos requeridos</p>
+                    <input type="file" id="csvFile" accept=".csv" style="display: none;">
+                </div>
+
+                <div id="csvProgress" style="display: none;">
+                    <div class="progress-container">
+                        <div class="progress">
+                            <div id="progressBar" class="progress-bar" role="progressbar" style="width: 0%"></div>
+                        </div>
+                        <p id="progressText">Procesando: 0/0 registros</p>
+                    </div>
+                </div>
+
+                <div id="csvResults" style="display: none;">
+                    <h3>Resultados del Análisis</h3>
+                    <div class="csv-stats">
+                        <div class="stat-box">
+                            <h4>Total Procesado</h4>
+                            <p id="totalProcessed">0</p>
+                        </div>
+                        <div class="stat-box">
+                            <h4>Dropout</h4>
+                            <p id="countDropout">0</p>
+                        </div>
+                        <div class="stat-box">
+                            <h4>Enrolled</h4>
+                            <p id="countEnrolled">0</p>
+                        </div>
+                        <div class="stat-box">
+                            <h4>Graduate</h4>
+                            <p id="countGraduate">0</p>
+                        </div>
+                    </div>
+
+                    <!-- Tabla de resultados -->
+                    <div class="table-responsive mt-4">
+                        <table class="table table-striped table-hover" id="resultsTable">
+                            <thead>
+                                <tr>
+                                    <th>#</th>
+                                    <th>Unid. Aprob.</th>
+                                    <th>Calificación</th>
+                                    <th>Arancel</th>
+                                    <th>Beca</th>
+                                    <th>Calif. Admisión</th>
+                                    <th>Predicción</th>
+                                    <th>Confianza</th>
+                                </tr>
+                            </thead>
+                            <tbody id="resultsBody">
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- Botón para descargar -->
+                    <button id="downloadBtn" class="btn btn-success mt-3">
+                        📥 Descargar Resultados (CSV)
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <!-- ═══════════════════════════════════════════════════════════════════════════
+             SECCIÓN DE MÉTRICAS
+             ═══════════════════════════════════════════════════════════════════════════ -->
+        <section class="section">
+            <h2 class="section-title">📊 Métricas del Modelo</h2>
+            
+            <div class="row">
+                <div class="col-lg-6">
+                    <div class="metrics-card">
+                        <h3>Rendimiento Global</h3>
+                        <div class="metrics-grid">
+                            <div class="metric-item">
+                                <span class="metric-label">Accuracy</span>
+                                <span class="metric-value" id="metricAccuracy">-</span>
+                                <div class="metric-bar">
+                                    <div class="metric-bar-fill" id="barAccuracy"></div>
+                                </div>
+                            </div>
+
+                            <div class="metric-item">
+                                <span class="metric-label">Precision</span>
+                                <span class="metric-value" id="metricPrecision">-</span>
+                                <div class="metric-bar">
+                                    <div class="metric-bar-fill" id="barPrecision"></div>
+                                </div>
+                            </div>
+
+                            <div class="metric-item">
+                                <span class="metric-label">Recall</span>
+                                <span class="metric-value" id="metricRecall">-</span>
+                                <div class="metric-bar">
+                                    <div class="metric-bar-fill" id="barRecall"></div>
+                                </div>
+                            </div>
+
+                            <div class="metric-item">
+                                <span class="metric-label">F1-Score</span>
+                                <span class="metric-value" id="metricF1">-</span>
+                                <div class="metric-bar">
+                                    <div class="metric-bar-fill" id="barF1"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-lg-6">
+                    <div class="metrics-card">
+                        <h3>Información del Modelo</h3>
+                        <div class="info-section">
+                            <p><strong>Tipo:</strong> Red Neuronal Profunda</p>
+                            <p><strong>Capas:</strong> 4 capas densas + Dropout</p>
+                            <p><strong>Activación:</strong> ReLU + Softmax</p>
+                            <p><strong>Muestras de entrenamiento:</strong> ~80% del dataset</p>
+                            <p><strong>Muestras de prueba:</strong> ~20% del dataset</p>
+                            <p><strong>Normalización:</strong> StandardScaler</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ═══════════════════════════════════════════════════════════════════════════
+             SECCIÓN DE MATRIZ DE CONFUSIÓN
+             ═══════════════════════════════════════════════════════════════════════════ -->
+        <section class="section">
+            <h2 class="section-title">🎯 Matriz de Confusión</h2>
+            
+            <div class="row">
+                <div class="col-lg-8">
+                    <div class="chart-card">
+                        <canvas id="confusionMatrixChart"></canvas>
+                    </div>
+                </div>
+
+                <div class="col-lg-4">
+                    <div class="confusion-info">
+                        <h3>Interpretación</h3>
+                        <div class="info-box">
+                            <h4>¿Qué es la Matriz de Confusión?</h4>
+                            <p>Muestra la comparación entre valores predichos vs reales. Cada celda representa cuántos registros fueron clasificados en cada categoría.</p>
+                        </div>
+                        <div class="info-box">
+                            <h4>Diagonal Principal</h4>
+                            <p>Los valores en la diagonal son predicciones CORRECTAS. Mientras más altos, mejor el modelo.</p>
+                        </div>
+                        <div class="info-box">
+                            <h4>Fuera de la Diagonal</h4>
+                            <p>Son errores de clasificación. El modelo confunde una clase con otra.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ═══════════════════════════════════════════════════════════════════════════
+             SECCIÓN DE DOCUMENTACIÓN
+             ═══════════════════════════════════════════════════════════════════════════ -->
+        <section class="section">
+            <h2 class="section-title">📚 Documentación Técnica</h2>
+            
+            <div class="documentation">
+                <div class="doc-card">
+                    <h3>🧠 Arquitectura del Modelo</h3>
+                    <code>
+Input (5 variables)<br>
+  ↓<br>
+Dense(64, ReLU)<br>
+  ↓<br>
+Dropout(30%)<br>
+  ↓<br>
+Dense(32, ReLU)<br>
+  ↓<br>
+Dropout(30%)<br>
+  ↓<br>
+Dense(16, ReLU)<br>
+  ↓<br>
+Dense(3, Softmax) → Salida
+                    </code>
+                </div>
+
+                <div class="doc-card">
+                    <h3>📝 Variables de Entrada</h3>
+                    <ul>
+                        <li><strong>Unidades Aprobadas (2do sem):</strong> Número de cursos completados</li>
+                        <li><strong>Calificación (2do sem):</strong> Promedio de notas</li>
+                        <li><strong>Pago de Arancel:</strong> Situación financiera (0=Al día, 1=Atrasado)</li>
+                        <li><strong>Beca:</strong> Beneficiario de ayuda (0=No, 1=Sí)</li>
+                        <li><strong>Calificación de Admisión:</strong> Puntaje de ingreso inicial</li>
+                    </ul>
+                </div>
+
+                <div class="doc-card">
+                    <h3>🎯 Clases de Salida</h3>
+                    <ul>
+                        <li><strong>Dropout (🚪):</strong> Estudiante que abandonó</li>
+                        <li><strong>Enrolled (📚):</strong> Estudiante actualmente matriculado</li>
+                        <li><strong>Graduate (🎓):</strong> Estudiante que se graduó</li>
+                    </ul>
+                </div>
+
+                <div class="doc-card">
+                    <h3>⚙️ Técnicas Utilizadas</h3>
+                    <ul>
+                        <li><strong>StandardScaler:</strong> Normalización de datos (media=0, desv.est=1)</li>
+                        <li><strong>Train-Test Split:</strong> 80% entrenamiento, 20% prueba</li>
+                        <li><strong>ReLU:</strong> Función de activación no lineal</li>
+                        <li><strong>Dropout:</strong> Regularización para evitar overfitting</li>
+                        <li><strong>Softmax:</strong> Probabilidades para 3 clases</li>
+                        <li><strong>Adam:</strong> Optimizador adaptativo</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <!-- ═══════════════════════════════════════════════════════════════════════════
+             FOOTER
+             ═══════════════════════════════════════════════════════════════════════════ -->
+        <footer class="footer">
+            <div class="footer-content">
+                <p>&copy; 2026 Proyecto Final de IA - Predicción de Estado Académico</p>
+                <p>Desarrollado con TensorFlow.js, Python y tecnologías modernas</p>
+                <div class="footer-badges">
+                    <span class="badge bg-info">TensorFlow.js</span>
+                    <span class="badge bg-info">Python</span>
+                    <span class="badge bg-info">Machine Learning</span>
+                    <span class="badge bg-info">Deep Learning</span>
+                </div>
+            </div>
+        </footer>
+    </div>
+
+    <!-- Chart.js para gráficos -->
+    <script src="chart.min.js"></script>
+
+    <!-- JavaScript del proyecto -->
+    <script src="script.js"></script>
+</body>
+</html>

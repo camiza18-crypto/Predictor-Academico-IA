@@ -1,0 +1,45 @@
+# ═══════════════════════════════════════════════════════════════════════════
+# DEPENDENCIAS DEL PROYECTO - COMPATIBLE CON PYTHON 3.11 Y WINDOWS
+# ═══════════════════════════════════════════════════════════════════════════
+
+# Herramientas base (CRÍTICAS - actualizar antes de instalar paquetes)
+setuptools==68.0.0
+wheel==0.41.0
+pip>=23.0
+
+# Manipulación y análisis de datos
+pandas==2.0.3
+numpy==1.26.4
+
+# Machine Learning - scikit-learn
+scikit-learn==1.3.0
+
+# Visualización
+matplotlib==3.7.2
+seaborn==0.12.2
+
+# Deep Learning - TensorFlow y Keras
+tensorflow==2.13.0
+tensorflowjs==4.11.0
+
+# Serialización de modelos
+joblib==1.3.1
+
+# ═══════════════════════════════════════════════════════════════════════════
+# NOTAS DE COMPATIBILIDAD:
+# ═══════════════════════════════════════════════════════════════════════════
+# 
+# - numpy==1.26.4: Compatible con np.object (eliminado en 1.27+)
+#   Necesario para tensorflowjs==4.11.0
+# 
+# - tensorflow==2.13.0: Última versión estable con soporte para .keras
+#   Compatible con numpy==1.26.4
+# 
+# - scikit-learn==1.3.0: Compatible, no requiere multi_class='multinomial'
+#   en LogisticRegression
+# 
+# - setuptools y wheel: CRÍTICOS para Windows + Python 3.11
+#   Actualizar con: pip install --upgrade setuptools wheel
+# 
+# ═══════════════════════════════════════════════════════════════════════════
+

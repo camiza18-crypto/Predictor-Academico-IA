@@ -1,0 +1,25 @@
+{
+    "matrix": [
+        [
+            183,
+            52,
+            49
+        ],
+        [
+            28,
+            63,
+            68
+        ],
+        [
+            10,
+            29,
+            403
+        ]
+    ],
+    "labels": [
+        "Dropout",
+        "Enrolled",
+        "Graduate"
+    ],
+    "model": "Neural Network"
+}

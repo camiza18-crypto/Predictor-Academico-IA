@@ -1,0 +1,32 @@
+{
+    "features": [
+        "Curricular units 2nd sem (approved)",
+        "Curricular units 2nd sem (grade)",
+        "Tuition fees up to date",
+        "Scholarship holder",
+        "Admission grade"
+    ],
+    "class_names": [
+        "Dropout",
+        "Enrolled",
+        "Graduate"
+    ],
+    "model_type": "neural_network",
+    "input_shape": 5,
+    "scaler_stats": {
+        "mean": [
+            4.433738344165018,
+            10.204514440510396,
+            0.8816049731562589,
+            0.2526137326928511,
+            126.87674484317606
+        ],
+        "std": [
+            3.0276680074994493,
+            5.234867446673293,
+            0.32307529224998155,
+            0.4345112596329765,
+            14.528653141571926
+        ]
+    }
+}

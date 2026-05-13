@@ -1,0 +1,28 @@
+# Entornos virtuales de Python
+venv/
+.venv/
+env/
+*.egg-info/
+
+# Caché de Python
+__pycache__/
+*.pyc
+*.pyo
+
+# Archivos de TensorFlow.js pesados (> 1MB) — se cargan desde CDN en producción
+web/tf.min.js
+
+# Archivos del sistema
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# VSCode
+.vscode/
+
+# Logs
+*.log
+
+# Archivos temporales
+*.tmp
+*.bak
